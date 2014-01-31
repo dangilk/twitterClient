@@ -5,6 +5,7 @@ import org.scribe.builder.api.TwitterApi;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 
 import com.codepath.oauth.OAuthBaseClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -33,11 +34,16 @@ public class TwitterClient extends OAuthBaseClient {
         super(context, REST_API_CLASS, REST_URL, REST_CONSUMER_KEY, REST_CONSUMER_SECRET, REST_CALLBACK_URL);
     }
     
-    public void getHomeTimeline(AsyncHttpResponseHandler handler){
-    	String url = getApiUrl("statuses/home_timeline.json");
+    public void getHomeTimeline(String maxId,AsyncHttpResponseHandler handler){
+    	String query = "statuses/home_timeline.json";
+    	if(maxId != null){
+    		query += "?max_id="+maxId;
+    	}
+    	String url = getApiUrl(query);
+    	Log.e("tag","url="+url);
     	client.get(url,null,handler);
     }
-    
+   
     
     public void tweet(String text, AsyncHttpResponseHandler handler){
     	String url = getApiUrl("statuses/update.json?status="+Uri.encode(text));

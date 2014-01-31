@@ -17,7 +17,7 @@ public class Tweet {
 		super();
 		try {
 			this.body = object.getString("text");
-			this.id = object.getString("id_str");
+			this.setId(object.getString("id_str"));
 			this.createdAt = object.getString("created_at");
 			this.user = new User(object.getJSONObject("user"));
 		} catch (JSONException e) {
@@ -54,5 +54,13 @@ public class Tweet {
 	}
 	public void setCreatedAt(String createdAt) {
 		this.createdAt = createdAt;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 }

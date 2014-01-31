@@ -16,27 +16,56 @@ import com.dan.twitterclient.models.Tweet;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 public class TimelineActivity extends Activity {
+	
+	ListView lvTweets;
+	ArrayList<Tweet> tweets = new ArrayList<Tweet>();
+	TweetAdapter adapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_timeline);
+		
+		lvTweets = (ListView)findViewById(R.id.lvTweets);
+		adapter = new TweetAdapter(getBaseContext(),tweets);
+		lvTweets.setAdapter(adapter);
+		
+		
+		// Attach the listener to the AdapterView onCreate
+		lvTweets.setOnScrollListener(new EndlessScrollListener() {
+        @Override
+        public void onLoadMore(int page, int totalItemsCount) {
+        	int count = adapter.getCount();
+        	if(count > 0){
+        		String minId = Long.toString(Long.valueOf(adapter.getItem(count-1).getId())-1);
+        		getHomeTimeline(minId);
+        	}
+        }
+        });
 	}
+
+	
 	
 	@Override
 	public void onStart(){
 		super.onStart();
-		TwitterClientApp.getRestClient().getHomeTimeline(new JsonHttpResponseHandler(){
+		//adapter.clear();
+		getHomeTimeline(null);
+	}
+	
+	public void getHomeTimeline(String maxId){
+		TwitterClientApp.getRestClient().getHomeTimeline(maxId,new JsonHttpResponseHandler(){
 			@Override
 			public void onSuccess(JSONArray jsonTweets){
 				Log.e("tag",jsonTweets.toString());
-				ArrayList<Tweet> tweets = Tweet.fromJsonArray(jsonTweets);
-				ListView lvTweets = (ListView)findViewById(R.id.lvTweets);
-				TweetAdapter adapter = new TweetAdapter(getBaseContext(),tweets);
-				lvTweets.setAdapter(adapter);
+				adapter.addAll( Tweet.fromJsonArray(jsonTweets));
 			}
 			
-		
+			@Override
+			public void onFailure(Throwable e, JSONArray error){
+				Log.e("tag","error: "+e.getMessage());
+			}
+			
 		});
 	}
 
