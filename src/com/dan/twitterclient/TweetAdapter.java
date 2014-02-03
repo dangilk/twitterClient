@@ -1,5 +1,6 @@
 package com.dan.twitterclient;
 
+import java.util.Date;
 import java.util.List;
 
 import android.content.Context;
@@ -15,9 +16,11 @@ import com.dan.twitterclient.models.Tweet;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class TweetAdapter extends ArrayAdapter<Tweet>{
+	Context activity;
 	
 	public TweetAdapter(Context context, List<Tweet> tweets){
 		super(context,0,tweets);
+		activity = context;
 	}
 	
 	@Override
@@ -31,7 +34,8 @@ public class TweetAdapter extends ArrayAdapter<Tweet>{
 		ImageView imageView = (ImageView)view.findViewById(R.id.ivProfile);
 		ImageLoader.getInstance().displayImage(tweet.getUser().getImage(),imageView);
 		TextView nameView = (TextView) view.findViewById(R.id.tvName);
-		String formattedName = "<b>" + tweet.getUser().getName() + "</b>" + " <small><font color-'#777777'>@"+tweet.getUser().getScreenName()+"</font></small>";
+		String formattedName = "<b>" + tweet.getUser().getName() + "</b>" + " <small><font color-'#777777'>@"+tweet.getUser().getScreenName()+"</font></small>" +
+				" <small><font color-'#777777'>"+tweet.getRelativeTimeCreated(new Date(), activity)+"</font></small>";
 		nameView.setText(Html.fromHtml(formattedName));
 		
 		TextView bodyView = (TextView)view.findViewById(R.id.tvBody);

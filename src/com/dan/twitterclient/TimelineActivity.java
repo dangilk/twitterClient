@@ -3,6 +3,8 @@ package com.dan.twitterclient;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -13,6 +15,7 @@ import android.view.MenuItem;
 import android.widget.ListView;
 
 import com.dan.twitterclient.models.Tweet;
+import com.dan.twitterclient.models.User;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 public class TimelineActivity extends Activity {
@@ -20,6 +23,7 @@ public class TimelineActivity extends Activity {
 	ListView lvTweets;
 	ArrayList<Tweet> tweets = new ArrayList<Tweet>();
 	TweetAdapter adapter;
+	private final int COMPOSE_ACTIVITY = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +33,23 @@ public class TimelineActivity extends Activity {
 		lvTweets = (ListView)findViewById(R.id.lvTweets);
 		adapter = new TweetAdapter(getBaseContext(),tweets);
 		lvTweets.setAdapter(adapter);
+		
+		TwitterClientApp.getRestClient().getUserCredentials(new JsonHttpResponseHandler(){
+			@Override
+			public void onSuccess(JSONObject userInfo){
+				try {
+					User.setDefaults(userInfo.getString("name"), userInfo.getString("profile_image_url"), userInfo.getString("screen_name"));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			@Override
+			public void onFailure(Throwable e, JSONArray error){
+				Log.e("tag","error: "+e.getMessage());
+			}
+			
+		});
 		
 		
 		// Attach the listener to the AdapterView onCreate
@@ -78,7 +99,16 @@ public class TimelineActivity extends Activity {
 	
 	public void composeClick(MenuItem mi){
 		Intent i = new Intent(this,ComposeActivity.class);
-		startActivity(i);
+		startActivityForResult(i,COMPOSE_ACTIVITY);
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode,int resultCode, Intent data){
+		if(resultCode == RESULT_OK && requestCode == COMPOSE_ACTIVITY){
+			String body = data.getStringExtra("tweet");
+			Tweet t = new Tweet(body);
+			adapter.insert(t, 0);
+		}
 	}
 
 }

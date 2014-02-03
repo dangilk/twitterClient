@@ -40,7 +40,6 @@ public class TwitterClient extends OAuthBaseClient {
     		query += "?max_id="+maxId;
     	}
     	String url = getApiUrl(query);
-    	Log.e("tag","url="+url);
     	client.get(url,null,handler);
     }
    
@@ -48,6 +47,11 @@ public class TwitterClient extends OAuthBaseClient {
     public void tweet(String text, AsyncHttpResponseHandler handler){
     	String url = getApiUrl("statuses/update.json?status="+Uri.encode(text));
     	client.post(url, null,handler);
+    }
+    
+    public void getUserCredentials(AsyncHttpResponseHandler handler){
+    	String url = getApiUrl("account/verify_credentials.json");
+    	client.get(url,null,handler);
     }
     
     // CHANGE THIS

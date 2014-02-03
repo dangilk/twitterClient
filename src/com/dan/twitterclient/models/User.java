@@ -11,6 +11,9 @@ public class User {
 	private String location = "";
 	private String image = "";
 	private String screenName = "";
+	private static String defaultName="";
+	private static String defaultImage="";
+	private static String defaultScreenName="";
 	
 	public User(JSONObject object){
 		super();
@@ -22,6 +25,18 @@ public class User {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public User(){
+		this.name = defaultName;
+		this.image = defaultImage;
+		this.screenName = defaultScreenName;
+	}
+	
+	public static void setDefaults(String name,String image, String sn){
+		User.defaultName = name;
+		User.defaultImage = image;
+		User.defaultScreenName = sn;
 	}
 	
 	public static ArrayList<User> fromJsonArray(JSONArray array){

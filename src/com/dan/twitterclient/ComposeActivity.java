@@ -1,6 +1,7 @@
 package com.dan.twitterclient;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -26,8 +27,14 @@ public class ComposeActivity extends Activity {
 	}
 	
 	public void clickTweet(View v){
-		TwitterClientApp.getRestClient().tweet(etTweet.getText().toString(),new JsonHttpResponseHandler(){
+		String tweet = etTweet.getText().toString();
+		TwitterClientApp.getRestClient().tweet(tweet,new JsonHttpResponseHandler(){
 		});
+		
+		Intent data = new Intent();
+		data.putExtra("tweet",tweet);
+		setResult(RESULT_OK,data);
+		finish();
 	}
 	
 
