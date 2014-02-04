@@ -6,14 +6,26 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class User {
+import com.activeandroid.Model;
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
+import com.activeandroid.query.Select;
+
+@Table(name="Users")
+public class User extends Model{
+	@Column(name="name")
 	private String name = "";
+	@Column(name="location")
 	private String location = "";
+	@Column(name="image")
 	private String image = "";
+	@Column(name="screenName",unique=true)
 	private String screenName = "";
 	private static String defaultName="";
 	private static String defaultImage="";
 	private static String defaultScreenName="";
+	
+	
 	
 	public User(JSONObject object){
 		super();
@@ -22,15 +34,33 @@ public class User {
 			this.location = object.getString("location");
 			this.setImage(object.getString("profile_image_url"));
 			this.screenName = object.getString("screen_name");
+			this.save();
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
 	
 	public User(){
+		super();
 		this.name = defaultName;
 		this.image = defaultImage;
 		this.screenName = defaultScreenName;
+		this.save();
+	}
+	
+	public static User getUser(JSONObject object){
+		String sn;
+		try {
+			sn = object.getString("screen_name");
+			User u = new Select().from(User.class).where("screenName = ? ",sn).executeSingle();
+			if(u == null){
+				return new User(object);
+			}else{
+				return u;
+			}
+		} catch (Exception e) {
+			return new User();
+		}
 	}
 	
 	public static void setDefaults(String name,String image, String sn){

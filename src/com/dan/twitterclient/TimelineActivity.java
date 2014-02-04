@@ -7,7 +7,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,6 +20,8 @@ import android.widget.ListView;
 import com.dan.twitterclient.models.Tweet;
 import com.dan.twitterclient.models.User;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 public class TimelineActivity extends Activity {
 	
@@ -29,6 +34,11 @@ public class TimelineActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_timeline);
+		
+		ImageLoader.getInstance().init(ImageLoaderConfiguration.createDefault(this));
+		
+		//Tweet.deleteAll();
+		
 		
 		lvTweets = (ListView)findViewById(R.id.lvTweets);
 		adapter = new TweetAdapter(getBaseContext(),tweets);
@@ -58,7 +68,7 @@ public class TimelineActivity extends Activity {
         public void onLoadMore(int page, int totalItemsCount) {
         	int count = adapter.getCount();
         	if(count > 0){
-        		String minId = Long.toString(Long.valueOf(adapter.getItem(count-1).getId())-1);
+        		String minId = Long.toString(Long.valueOf(adapter.getItem(count-1).getStrId())-1);
         		getHomeTimeline(minId);
         	}
         }
@@ -75,19 +85,23 @@ public class TimelineActivity extends Activity {
 	}
 	
 	public void getHomeTimeline(String maxId){
-		TwitterClientApp.getRestClient().getHomeTimeline(maxId,new JsonHttpResponseHandler(){
-			@Override
-			public void onSuccess(JSONArray jsonTweets){
-				Log.e("tag",jsonTweets.toString());
-				adapter.addAll( Tweet.fromJsonArray(jsonTweets));
-			}
-			
-			@Override
-			public void onFailure(Throwable e, JSONArray error){
-				Log.e("tag","error: "+e.getMessage());
-			}
-			
-		});
+		if(isNetworkAvailable()){
+			TwitterClientApp.getRestClient().getHomeTimeline(maxId,new JsonHttpResponseHandler(){
+				@Override
+				public void onSuccess(JSONArray jsonTweets){
+					Log.e("tag",jsonTweets.toString());
+					adapter.addAll( Tweet.fromJsonArray(jsonTweets));
+				}
+				
+				@Override
+				public void onFailure(Throwable e, JSONArray error){
+					Log.e("tag","error: "+e.getMessage());
+				}
+				
+			});
+		}else{
+			adapter.addAll(Tweet.recentItems(maxId));
+		}
 	}
 
 	@Override
@@ -95,6 +109,13 @@ public class TimelineActivity extends Activity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.timeline, menu);
 		return true;
+	}
+	
+	private boolean isNetworkAvailable() {
+	    ConnectivityManager connectivityManager 
+	          = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+	    return activeNetworkInfo != null && activeNetworkInfo.isConnected();
 	}
 	
 	public void composeClick(MenuItem mi){

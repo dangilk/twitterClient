@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.json.JSONArray;
@@ -14,35 +15,53 @@ import android.content.Context;
 import android.text.format.DateUtils;
 import android.util.Log;
 
-public class Tweet {
+import com.activeandroid.Model;
+import com.activeandroid.annotation.Column;
+import com.activeandroid.annotation.Table;
+import com.activeandroid.query.Delete;
+import com.activeandroid.query.Select;
 
+@Table(name="Tweets")
+public class Tweet extends Model{
+
+	@Column(name="user")
 	private User user;
+	@Column(name="body")
 	private String body;
+	@Column(name="created")
 	private Date created;
-	private String id;
+	@Column(name="strId", unique=true)
+	private String strId;
+	
+	public Tweet(){
+		super();
+	}
 	
 	public Tweet(JSONObject object){
 		super();
 		try {
 			this.body = object.getString("text");
-			this.setId(object.getString("id_str"));
+			this.setStrId(object.getString("id_str"));
 			String createdAt = object.getString("created_at");
 			try {
 				this.created = new SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZZ yyyy",Locale.ENGLISH).parse(createdAt);
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
-			this.user = new User(object.getJSONObject("user"));
+			this.user = User.getUser(object.getJSONObject("user"));
+			this.save();
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+		
 	}
 	
 	public Tweet(String body){
-		this.user = new User();
+		this.user = User.getUser(null);
 		this.body = body;
 		this.created = new Date();
-		this.id = "";
+		this.strId = "";
+		this.save();
 	}
 	
 	public static ArrayList<Tweet> fromJsonArray(JSONArray array){
@@ -76,12 +95,27 @@ public class Tweet {
 		String str =  (String) DateUtils.getRelativeDateTimeString(c, time , DateUtils.SECOND_IN_MILLIS, DateUtils.DAY_IN_MILLIS, 0);
 		return str;
 	}
-
-	public String getId() {
-		return id;
+	
+	public String getStrId(){
+		return strId;
+	}
+	
+	public static List<Tweet> recentItems(String maxId) {
+		if(maxId==null){
+			return new Select().from(Tweet.class).orderBy("created DESC").limit("20").execute();
+		}else{
+			return new Select().from(Tweet.class).where("strId <= "+maxId).orderBy("created DESC").limit("20").execute();
+		}
+	    
+	}
+	
+	public static void deleteAll(){
+		new Delete().from(Tweet.class).execute();
 	}
 
-	public void setId(String id) {
-		this.id = id;
+
+
+	public void setStrId(String id) {
+		this.strId = id;
 	}
 }
