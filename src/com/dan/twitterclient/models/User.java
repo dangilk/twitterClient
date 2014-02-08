@@ -6,6 +6,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.util.Log;
+
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
@@ -21,9 +23,13 @@ public class User extends Model{
 	private String image = "";
 	@Column(name="screenName",unique=true)
 	private String screenName = "";
-	private static String defaultName="";
-	private static String defaultImage="";
-	private static String defaultScreenName="";
+	public static String defaultName="";
+	public static String defaultImage="";
+	public static String defaultScreenName="";
+	public static Integer myFollowers = 0;
+	public static Integer myFollowing = 0;
+	public static String myDescription = "";
+	
 	
 	
 	
@@ -63,10 +69,14 @@ public class User extends Model{
 		}
 	}
 	
-	public static void setDefaults(String name,String image, String sn){
+	public static void setDefaults(String name,String image, String sn,String desc, Integer followers, Integer following){
+		Log.e("tag","set defaults: "+name);
 		User.defaultName = name;
 		User.defaultImage = image;
 		User.defaultScreenName = sn;
+		User.myDescription = desc;
+		User.myFollowers = followers;
+		User.myFollowing = following;
 	}
 	
 	public static ArrayList<User> fromJsonArray(JSONArray array){

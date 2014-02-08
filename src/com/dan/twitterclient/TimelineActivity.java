@@ -1,33 +1,31 @@
 package com.dan.twitterclient;
 
-import java.util.ArrayList;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
-import android.content.Context;
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
+import android.app.ActionBar.TabListener;
+import android.app.FragmentTransaction;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ListView;
 
-import com.dan.twitterclient.models.Tweet;
+import com.dan.twitterclient.fragments.MentionsFragment;
+import com.dan.twitterclient.fragments.TimelineFragment;
 import com.dan.twitterclient.models.User;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
-public class TimelineActivity extends Activity {
+public class TimelineActivity extends FragmentActivity implements TabListener {
 	
-	ListView lvTweets;
-	ArrayList<Tweet> tweets = new ArrayList<Tweet>();
-	TweetAdapter adapter;
+	
 	private final int COMPOSE_ACTIVITY = 0;
 
 	@Override
@@ -36,19 +34,15 @@ public class TimelineActivity extends Activity {
 		setContentView(R.layout.activity_timeline);
 		
 		ImageLoader.getInstance().init(ImageLoaderConfiguration.createDefault(this));
+		setupNavigationTabs();
 		
-		//Tweet.deleteAll();
-		
-		
-		lvTweets = (ListView)findViewById(R.id.lvTweets);
-		adapter = new TweetAdapter(getBaseContext(),tweets);
-		lvTweets.setAdapter(adapter);
 		
 		TwitterClientApp.getRestClient().getUserCredentials(new JsonHttpResponseHandler(){
 			@Override
 			public void onSuccess(JSONObject userInfo){
 				try {
-					User.setDefaults(userInfo.getString("name"), userInfo.getString("profile_image_url"), userInfo.getString("screen_name"));
+					User.setDefaults(userInfo.getString("name"), userInfo.getString("profile_image_url"), userInfo.getString("screen_name"),
+							userInfo.getString("description"),userInfo.getInt("followers_count"),userInfo.getInt("friends_count"));
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -62,47 +56,27 @@ public class TimelineActivity extends Activity {
 		});
 		
 		
-		// Attach the listener to the AdapterView onCreate
-		lvTweets.setOnScrollListener(new EndlessScrollListener() {
-        @Override
-        public void onLoadMore(int page, int totalItemsCount) {
-        	int count = adapter.getCount();
-        	if(count > 0){
-        		String minId = Long.toString(Long.valueOf(adapter.getItem(count-1).getStrId())-1);
-        		getHomeTimeline(minId);
-        	}
-        }
-        });
+		
 	}
 
 	
 	
-	@Override
-	public void onStart(){
-		super.onStart();
-		//adapter.clear();
-		getHomeTimeline(null);
-	}
 	
-	public void getHomeTimeline(String maxId){
-		if(isNetworkAvailable()){
-			TwitterClientApp.getRestClient().getHomeTimeline(maxId,new JsonHttpResponseHandler(){
-				@Override
-				public void onSuccess(JSONArray jsonTweets){
-					Log.e("tag",jsonTweets.toString());
-					adapter.addAll( Tweet.fromJsonArray(jsonTweets));
-				}
-				
-				@Override
-				public void onFailure(Throwable e, JSONArray error){
-					Log.e("tag","error: "+e.getMessage());
-				}
-				
-			});
-		}else{
-			adapter.addAll(Tweet.recentItems(maxId));
-		}
+
+	private void setupNavigationTabs() {
+		ActionBar bar = getActionBar();
+		bar.setNavigationMode(bar.NAVIGATION_MODE_TABS);
+		bar.setDisplayShowTitleEnabled(true);
+		Tab tabHome = bar.newTab().setText("Home").setTag("HomeTimelineFragment").setIcon(R.drawable.ic_home).setTabListener(this);
+		Tab tabMentions = bar.newTab().setText("Mentions").setTag("MentionsFragment").setIcon(R.drawable.ic_mentions).setTabListener(this);
+		bar.addTab(tabHome);
+		bar.addTab(tabMentions);
+		bar.selectTab(tabHome);
 	}
+
+
+
+
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -111,18 +85,13 @@ public class TimelineActivity extends Activity {
 		return true;
 	}
 	
-	private boolean isNetworkAvailable() {
-	    ConnectivityManager connectivityManager 
-	          = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-	    return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-	}
+	
 	
 	public void composeClick(MenuItem mi){
 		Intent i = new Intent(this,ComposeActivity.class);
 		startActivityForResult(i,COMPOSE_ACTIVITY);
 	}
-	
+/*	
 	@Override
 	protected void onActivityResult(int requestCode,int resultCode, Intent data){
 		if(resultCode == RESULT_OK && requestCode == COMPOSE_ACTIVITY){
@@ -131,5 +100,44 @@ public class TimelineActivity extends Activity {
 			adapter.insert(t, 0);
 		}
 	}
+*/
 
+
+
+
+
+	@Override
+	public void onTabReselected(Tab tab, FragmentTransaction ft) {
+		
+	}
+
+
+
+
+
+	@Override
+	public void onTabSelected(Tab tab, FragmentTransaction ft) {
+		FragmentManager manager = getSupportFragmentManager();
+		android.support.v4.app.FragmentTransaction fts = manager.beginTransaction();
+		if(tab.getTag().equals("HomeTimelineFragment")){
+			fts.replace(R.id.frame_container, new TimelineFragment());
+		}else{
+			fts.replace(R.id.frame_container, new MentionsFragment());
+		}
+		fts.commit();
+	}
+	
+	public void onProfileView(MenuItem mi){
+		Intent i = new Intent(this,ProfileActivity.class);
+		startActivity(i);
+	}
+
+
+
+
+
+	@Override
+	public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+		
+	}
 }
