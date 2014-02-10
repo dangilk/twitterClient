@@ -45,8 +45,8 @@
             android:id="@+id/tvTagline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/tvName"
-            android:layout_below="@+id/tvName"
+            android:layout_alignLeft="@+id/tvProfileName"
+            android:layout_below="@+id/tvProfileName"
             android:textSize="12sp"
             android:text="" />
 

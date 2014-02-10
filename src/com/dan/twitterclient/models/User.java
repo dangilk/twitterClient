@@ -6,6 +6,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import com.activeandroid.Model;
@@ -14,7 +16,7 @@ import com.activeandroid.annotation.Table;
 import com.activeandroid.query.Select;
 
 @Table(name="Users")
-public class User extends Model{
+public class User extends Model implements Parcelable{
 	@Column(name="name")
 	private String name = "";
 	@Column(name="location")
@@ -23,6 +25,13 @@ public class User extends Model{
 	private String image = "";
 	@Column(name="screenName",unique=true)
 	private String screenName = "";
+	@Column(name="followers")
+	private Integer followers = 0;
+	@Column(name="following")
+	private Integer following = 0;
+	@Column(name="description")
+	private String description = "";
+	
 	public static String defaultName="";
 	public static String defaultImage="";
 	public static String defaultScreenName="";
@@ -40,10 +49,23 @@ public class User extends Model{
 			this.location = object.getString("location");
 			this.setImage(object.getString("profile_image_url"));
 			this.screenName = object.getString("screen_name");
+			this.followers = object.getInt("followers_count");
+			this.following = object.getInt("friends_count");
+			this.description = object.getString("description");
 			this.save();
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public User(Parcel in){
+		this.name = in.readString();
+		this.location = in.readString();
+		this.setImage(in.readString());
+		this.screenName = in.readString();
+		this.followers = in.readInt();
+		this.following = in.readInt();
+		this.description = in.readString();
 	}
 	
 	public User(){
@@ -51,6 +73,9 @@ public class User extends Model{
 		this.name = defaultName;
 		this.image = defaultImage;
 		this.screenName = defaultScreenName;
+		this.followers = myFollowers;
+		this.following = myFollowing;
+		this.description = myDescription;
 		this.save();
 	}
 	
@@ -91,6 +116,30 @@ public class User extends Model{
 		return ret;
 	}
 	
+	public Integer getFollowers() {
+		return followers;
+	}
+
+	public void setFollowers(Integer followers) {
+		this.followers = followers;
+	}
+
+	public Integer getFollowing() {
+		return following;
+	}
+
+	public void setFollowing(Integer following) {
+		this.following = following;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -119,4 +168,30 @@ public class User extends Model{
 	public void setScreenName(String screenName) {
 		this.screenName = screenName;
 	}
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeString(name);
+		dest.writeString(location);
+		dest.writeString(image);
+		dest.writeString(screenName);
+		dest.writeInt(followers);
+		dest.writeInt(following);
+		dest.writeString(description);
+	}
+	
+	public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public User createFromParcel(Parcel in) {
+            return new User(in); 
+        }
+
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
 }

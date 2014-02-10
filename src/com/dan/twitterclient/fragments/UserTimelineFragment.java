@@ -9,11 +9,22 @@ import com.dan.twitterclient.models.Tweet;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 public class UserTimelineFragment extends TweetsListFragment {
+	String sn = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		TwitterClientApp.getRestClient().getUserTimeline(new JsonHttpResponseHandler(){
+		
+	}
+	
+	public void setSn(String sn){
+		this.sn = sn;
+	}
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+		TwitterClientApp.getRestClient().getUserTimeline(sn,new JsonHttpResponseHandler(){
 			@Override
 			public void onSuccess(JSONArray jsonTweets){
 				getAdapter().addAll(Tweet.fromJsonArray(jsonTweets));

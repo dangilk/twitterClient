@@ -1,12 +1,12 @@
 package com.dan.twitterclient;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.dan.twitterclient.fragments.UserTimelineFragment;
 import com.dan.twitterclient.models.User;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
@@ -16,21 +16,27 @@ public class ProfileActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_profile);
-		getActionBar().setTitle("@"+User.defaultScreenName);
-		populateProfileHeader();
+		Bundle data = getIntent().getExtras();
+		User u = (User) data.getParcelable("user");
+		getActionBar().setTitle("@"+u.getScreenName());
+		UserTimelineFragment ut = (UserTimelineFragment)getSupportFragmentManager().findFragmentById(R.id.fragmentUserTimeline);
+		ut.setSn(u.getScreenName());
+		
+		
+		populateProfileHeader(u.getImage(),u.getName(),u.getDescription(),u.getFollowers(),u.getFollowing());
 	}
 
-	private void populateProfileHeader() {
+	private void populateProfileHeader(String image, String name, String description, Integer followers, Integer following) {
 		ImageView iv =(ImageView) findViewById(R.id.ivProfileImage);
 		TextView tv = (TextView)findViewById(R.id.tvProfileName);
-		tv.setText(User.defaultName);
+		tv.setText(name);
 		tv = (TextView)findViewById(R.id.tvTagline);
-		tv.setText(User.myDescription);
+		tv.setText(description);
 		tv = (TextView)findViewById(R.id.tvFollowers);
-		tv.setText("My followers: "+User.myFollowers);
+		tv.setText("My followers: "+followers);
 		tv=(TextView)findViewById(R.id.tvFollowing);
-		tv.setText("Following: "+User.myFollowing);
-		ImageLoader.getInstance().displayImage(User.defaultImage, iv);
+		tv.setText("Following: "+following);
+		ImageLoader.getInstance().displayImage(image, iv);
 	}
 
 	@Override
