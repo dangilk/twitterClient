@@ -14,16 +14,18 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
+import com.dan.twitterclient.EndlessScrollListener;
 import com.dan.twitterclient.R;
 import com.dan.twitterclient.TweetAdapter;
 import com.dan.twitterclient.models.Tweet;
 import com.dan.twitterclient.models.User;
 
-public class TweetsListFragment extends Fragment implements OnItemClickListener{
+public abstract class TweetsListFragment extends Fragment{
 	TweetAdapter adapter;
 	ListView lvTweets;
 	ArrayList<Tweet> tweets = new ArrayList<Tweet>();
 	Listener listener = null;
+	public static int tweetDepth = 0;
 	
 	public void setListener(Listener listener) {
 		this.listener = listener;
@@ -39,8 +41,29 @@ public class TweetsListFragment extends Fragment implements OnItemClickListener{
 		lvTweets = (ListView)v.findViewById(R.id.lvTweets);
 		adapter = new TweetAdapter(getActivity().getBaseContext(),tweets);
 		lvTweets.setAdapter(adapter);
-		lvTweets.setOnItemClickListener(this);
+		
+		
+		lvTweets.setOnScrollListener(new EndlessScrollListener() {
+	        @Override
+	        public void onLoadMore(int page, int totalItemsCount) {
+	        	int count = adapter.getCount();
+	        	if(count > 0){
+	        		String minId = Long.toString(Long.valueOf(adapter.getItem(count-1).getStrId())-1);
+	        		apiCall(minId);
+	        	}
+	        }
+	        });
 		return v;
+	}
+	
+	public static void updateDepth(int i){
+		tweetDepth = i;
+	}
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+		apiCall(null);
 	}
 	
 	public void insertTweetTop(Tweet t){
@@ -62,13 +85,7 @@ public class TweetsListFragment extends Fragment implements OnItemClickListener{
 	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 	    return activeNetworkInfo != null && activeNetworkInfo.isConnected();
 	}
+	
+	abstract void apiCall(String maxId);
 
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		if(listener != null){
-			Tweet t = tweets.get(position);
-			listener.profileClicked(t.getUser());
-		}
-		
-	}
 }

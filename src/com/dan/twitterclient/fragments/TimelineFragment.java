@@ -20,25 +20,7 @@ public class TimelineFragment extends TweetsListFragment {
 		super.onCreate(savedInstanceState);
 	}
 	
-	
-	@Override
-	public void onStart(){
-		super.onStart();
-		getHomeTimeline(null);
-		
-		lvTweets.setOnScrollListener(new EndlessScrollListener() {
-	        @Override
-	        public void onLoadMore(int page, int totalItemsCount) {
-	        	int count = adapter.getCount();
-	        	if(count > 0){
-	        		String minId = Long.toString(Long.valueOf(adapter.getItem(count-1).getStrId())-1);
-	        		getHomeTimeline(minId);
-	        	}
-	        }
-	        });
-	}
-	
-	public void getHomeTimeline(String maxId){
+	public void apiCall(String maxId){
 		if(isNetworkAvailable()){
 			TwitterClientApp.getRestClient().getHomeTimeline(maxId,new JsonHttpResponseHandler(){
 				@Override

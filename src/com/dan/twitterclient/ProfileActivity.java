@@ -6,6 +6,7 @@ import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.dan.twitterclient.fragments.TweetsListFragment;
 import com.dan.twitterclient.fragments.UserTimelineFragment;
 import com.dan.twitterclient.models.User;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -16,11 +17,15 @@ public class ProfileActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_profile);
+		TweetsListFragment.updateDepth(1);
 		Bundle data = getIntent().getExtras();
 		User u = (User) data.getParcelable("user");
 		getActionBar().setTitle("@"+u.getScreenName());
 		UserTimelineFragment ut = (UserTimelineFragment)getSupportFragmentManager().findFragmentById(R.id.fragmentUserTimeline);
 		ut.setSn(u.getScreenName());
+		
+		
+		
 		
 		
 		populateProfileHeader(u.getImage(),u.getName(),u.getDescription(),u.getFollowers(),u.getFollowing());

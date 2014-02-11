@@ -68,7 +68,9 @@ public class Tweet extends Model{
 		ArrayList<Tweet> ret = new ArrayList<Tweet>();
 		for(int i=0;i<array.length();i++){
 			try {
-				ret.add(new Tweet(array.getJSONObject(i)));
+				Tweet t = new Tweet(array.getJSONObject(i));
+				
+				ret.add(t);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}

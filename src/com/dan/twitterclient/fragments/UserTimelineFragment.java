@@ -3,6 +3,7 @@ package com.dan.twitterclient.fragments;
 import org.json.JSONArray;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.dan.twitterclient.TwitterClientApp;
 import com.dan.twitterclient.models.Tweet;
@@ -18,17 +19,21 @@ public class UserTimelineFragment extends TweetsListFragment {
 	}
 	
 	public void setSn(String sn){
+		Log.e("tag","set sn");
 		this.sn = sn;
 	}
 	
-	@Override
-	public void onStart() {
-		super.onStart();
-		TwitterClientApp.getRestClient().getUserTimeline(sn,new JsonHttpResponseHandler(){
-			@Override
-			public void onSuccess(JSONArray jsonTweets){
-				getAdapter().addAll(Tweet.fromJsonArray(jsonTweets));
-			}
-		});
+	public void apiCall(String maxId){
+		if(isNetworkAvailable()){
+			Log.e("tag","profile api call");
+			TwitterClientApp.getRestClient().getUserTimeline(sn,maxId,new JsonHttpResponseHandler(){
+				@Override
+				public void onSuccess(JSONArray jsonTweets){
+					getAdapter().addAll(Tweet.fromJsonArray(jsonTweets));
+				}
+			});
+		}else{
+			//adapter.addAll(Tweet.recentItems(maxId));
+		}
 	}
 }

@@ -83,13 +83,17 @@ public class User extends Model implements Parcelable{
 		String sn;
 		try {
 			sn = object.getString("screen_name");
+			Log.e("tag","get user for: "+sn);
 			User u = new Select().from(User.class).where("screenName = ? ",sn).executeSingle();
 			if(u == null){
+				Log.e("tag","user not found");
 				return new User(object);
 			}else{
+				Log.e("tag","user found: "+u.getName());
 				return u;
 			}
 		} catch (Exception e) {
+			Log.e("tag","exception: "+e.getMessage());
 			return new User();
 		}
 	}

@@ -10,6 +10,7 @@ import android.app.ActionBar.TabListener;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
@@ -30,15 +31,21 @@ public class TimelineActivity extends FragmentActivity implements TabListener, T
 	
 	
 	private final int COMPOSE_ACTIVITY = 0;
+	TimelineFragment timelineFragment;
+	MentionsFragment mentionsFragment;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_timeline);
 		
+		timelineFragment = new TimelineFragment();
+		mentionsFragment = new MentionsFragment();
+		timelineFragment.setListener(this);
+		mentionsFragment.setListener(this);
+		
 		ImageLoader.getInstance().init(ImageLoaderConfiguration.createDefault(this));
 		setupNavigationTabs();
-		
 		
 		TwitterClientApp.getRestClient().getUserCredentials(new JsonHttpResponseHandler(){
 			@Override
@@ -57,14 +64,13 @@ public class TimelineActivity extends FragmentActivity implements TabListener, T
 			}
 			
 		});
-		
-		
-		
 	}
-
 	
-	
-	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		TweetsListFragment.updateDepth(0);
+	}
 
 	private void setupNavigationTabs() {
 		ActionBar bar = getActionBar();
@@ -129,13 +135,9 @@ public class TimelineActivity extends FragmentActivity implements TabListener, T
 		FragmentManager manager = getSupportFragmentManager();
 		android.support.v4.app.FragmentTransaction fts = manager.beginTransaction();
 		if(tab.getTag().equals("HomeTimelineFragment")){
-			TimelineFragment tf = new TimelineFragment();
-			tf.setListener(this);
-			fts.replace(R.id.frame_container, tf);
+			switchToFragment(timelineFragment);
 		}else{
-			MentionsFragment mf = new MentionsFragment();
-			mf.setListener(this);
-			fts.replace(R.id.frame_container, mf);
+			switchToFragment(mentionsFragment);
 		}
 		fts.commit();
 	}
@@ -143,6 +145,11 @@ public class TimelineActivity extends FragmentActivity implements TabListener, T
 	public void onProfileView(MenuItem mi){
 		profileClicked(User.getUser(null));
 	}
+	
+	public void switchToFragment(Fragment newFrag) {
+        getSupportFragmentManager().beginTransaction().replace(R.id.frame_container, newFrag)
+                .commitAllowingStateLoss();
+    }
 
 
 
